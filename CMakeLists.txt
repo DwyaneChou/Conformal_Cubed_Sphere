@@ -42,12 +42,14 @@ endif ()
 set(source_files
   src/ccs.f90
   src/jimcc_m.f90
+  src/parm_m.f90
   src/precis_m.f90
   src/constants_mod.f90
   src/mesh_mod.f90
   src/math_mod.f90
   src/output_mod.f90
   src/parameters_mod.f90
+  src/ghost_mod.f90
 )
 
 add_library(CCS ${source_files})

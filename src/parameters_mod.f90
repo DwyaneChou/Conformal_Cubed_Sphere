@@ -7,8 +7,8 @@ module parameters_mod
   real    :: dx     !  grid-spacing in the x-direction
   real    :: dy     !  grid-spacing in the y-direction
   
-  integer :: xhalo  !  halo number of x-diretion
-  integer :: yhalo  !  halo number of y-diretion
+  integer, parameter :: xhalo = 6 !  halo number of x-diretion
+  integer, parameter :: yhalo = 6 !  halo number of y-diretion
   
   ! Index parameter
   integer :: ids      ! The starting index in the x-direction (Physical domain)
@@ -27,9 +27,6 @@ module parameters_mod
   integer :: Nx       ! Element numbers in the x-direction
   integer :: Ny       ! Element numbers in the y-direction
   
-  integer :: Nx_halo  ! Element numbers in the x-direction with halo
-  integer :: Ny_halo  ! Element numbers in the y-directionwith halo
-  
   integer, parameter :: Nf = 6           ! Number of cube faces
   
   !real, parameter :: x_min = -45.   !  start location of x-direction
@@ -42,10 +39,9 @@ module parameters_mod
   real, parameter :: y_min = 0.   !  start location of y-direction
   real, parameter :: y_max = 90.  !  end location of y-direction
   
-  namelist /domain/ dx          ,&
-                    dy          ,&
-                    xhalo       ,&
-                    yhalo
+  integer :: nPVHalo
+  
+  namelist /domain/ dx,dy
   
   contains
   
@@ -62,8 +58,6 @@ module parameters_mod
     ! Setting default values
     dx    = 2.
     dy    = 2.
-    xhalo = 0
-    yhalo = 0
     
     ! Read namelist
     call readNamelist
@@ -80,6 +74,8 @@ module parameters_mod
     ! Calculate element numbers on x/y direction
     Nx = int((x_max - x_min)/dx)
     Ny = int((y_max - y_min)/dy)
+    Nx = 2 * Nx + 1
+    Ny = 2 * Ny + 1
     
     ! Calculate starting and ending index for physical domain
     ids  = 1
@@ -88,21 +84,20 @@ module parameters_mod
     jde  = ny
     
     ! Calculate starting and ending index for memory array
-    ips  = 1   - xhalo
+    ips  = ids - xhalo
     ipe  = ide + xhalo
-    jps  = 1   - yhalo
+    jps  = jds - yhalo
     jpe  = jde + yhalo
     
-    Nx_halo = ipe - ips + 1
-    Ny_halo = jpe - jps + 1
+    nPVHalo = xhalo
     
     ! Setting the starting patch index and ending patch index
     ifs = 1
     ife = Nf
     
     ! Convert Degree to map coordinate
-    dx = dx * R2M
-    dy = dy * R2M
+    dx = dx * D2R
+    dy = dy * D2R
     
   end subroutine initParameters
   

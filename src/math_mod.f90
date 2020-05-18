@@ -102,6 +102,38 @@ module math_mod
   
   end subroutine rotz
   
+  subroutine wind_sph2cart(uc,vc,wc,us,vs,lon,lat)
+    real,intent(out) :: uc,vc,wc
+    real,intent(in ) :: us,vs
+    real,intent(in ) :: lon,lat
+    
+    real s2c_u(3),s2c_v(3)
+    
+    s2c_u = [-sin(lon), cos(lon), 0.]
+    s2c_v = [-cos(lon)*sin(lat), -sin(lon)*sin(lat), cos(lat)]
+    
+    uc = s2c_u(1)*us + s2c_v(1)*vs
+    vc = s2c_u(2)*us + s2c_v(2)*vs
+    wc = s2c_u(3)*us + s2c_v(3)*vs
+  
+  end subroutine wind_sph2cart
+  
+  subroutine wind_cart2sph(us,vs,uc,vc,wc,lon,lat)
+    real,intent(out) :: us,vs
+    real,intent(in ) :: uc,vc,wc
+    real,intent(in ) :: lon,lat
+    
+    real c2s_u(2),c2s_v(2),c2s_w(2)
+    
+    c2s_u = [-sin(lon), -cos(lon)*sin(lat)]
+    c2s_v = [ cos(lon), -sin(lon)*sin(lat)]
+    c2s_w = [0.       ,           cos(lat)]
+    
+    us = c2s_u(1)*uc + c2s_v(1)*vc + c2s_w(1)*wc
+    vs = c2s_u(2)*uc + c2s_v(2)*vc + c2s_w(2)*wc
+  
+  end subroutine wind_cart2sph
+  
   function point2plane(p1,p2,p3,pd)
     real(r8),dimension(3)             :: point2plane
     real(r8),dimension(3),intent(in ) :: p1,p2,p3
@@ -294,10 +326,24 @@ module math_mod
   ! calculate determinant
   function det(matrix)
     real(r8)            :: det
-    real(r8),intent(in) :: matrix(3,3)
+    real(r8),intent(in) :: matrix(:,:)
     
+    integer ids,ide
+    integer order
+    
+    ids = lbound(matrix,1)
+    ide = ubound(matrix,1)
+    
+    order = ide - ids + 1
+    
+    if(order == 2)then
+      det = matrix(1,1) * matrix(2,2) - matrix(2,1) * matrix(1,2)
+    elseif(order == 3)then
     det = matrix(1,1)*matrix(2,2)*matrix(3,3) + matrix(1,2)*matrix(2,3)*matrix(3,1) + matrix(1,3)*matrix(2,1)*matrix(3,2)&
         - matrix(1,3)*matrix(2,2)*matrix(3,1) - matrix(1,2)*matrix(2,1)*matrix(3,3) - matrix(1,1)*matrix(2,3)*matrix(3,2)
+    else
+      stop 'Function det do not support determinant over 3nd order'
+    endif
   end function det
   
   ! calculate determinant
@@ -368,6 +414,35 @@ module math_mod
      end if
     end do
   end function cofactor
+  
+  function center_difference(f,dh)
+    real              :: center_difference
+    real,dimension(:) :: f
+    real              :: dh
+    
+    integer ids,ide
+    integer ic
+    
+    ids = lbound(f,1)
+    ide = ubound(f,1)
+    
+    ic = ( ide - ids + 1 ) / 2 + 1
+    
+    !! 2nd
+    !center_difference = ( f(ic+1) - f(ic-1) ) / ( 2. * dh )
+    !!print*,'2nd',center_difference
+    
+    !! 4th
+    !center_difference = ( f(ic-2) - 8.*f(ic-1) + 8.*f(ic+1) - f(ic+2) ) / ( 12. * dh )
+    !!print*,'4th',center_difference
+    
+    ! 6th
+    center_difference = ( -f(ic-3) + 9. * f(ic-2) - 45. * f(ic-1) + 45. * f(ic+1) - 9. * f(ic+2) + f(ic+3) ) / ( 60. * dh );
+    !print*,'6th',center_difference
+    
+    !print*,''
+    
+  end function center_difference
   
       ! calculate inverse matrix of A_input
       ! N is the order of matrix A_input and A
