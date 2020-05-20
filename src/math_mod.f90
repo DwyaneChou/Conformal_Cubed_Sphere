@@ -437,7 +437,7 @@ module math_mod
     !!print*,'4th',center_difference
     
     ! 6th
-    center_difference = ( -f(ic-3) + 9. * f(ic-2) - 45. * f(ic-1) + 45. * f(ic+1) - 9. * f(ic+2) + f(ic+3) ) / ( 60. * dh );
+    center_difference = ( -f(ic-3) + 9. * f(ic-2) - 45. * f(ic-1) + 45. * f(ic+1) - 9. * f(ic+2) + f(ic+3) ) / ( 60. * dh )
     !print*,'6th',center_difference
     
     !print*,''

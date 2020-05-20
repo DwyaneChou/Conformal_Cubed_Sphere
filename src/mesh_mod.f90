@@ -81,7 +81,6 @@
         real dlondy,dlatdy
         real dlondz,dlatdz
         real sph2cart_matrix(2,3)
-        real metric_lonlat(2,2)
         
         real dxdxi ,dydxi ,dzdxi
         real dxdeta,dydeta,dzdeta
@@ -182,7 +181,7 @@
         ! Calculate matrices
         dh = dx / 2.
         do k = ifs,ife
-          !$OMP PARALLEL DO PRIVATE(i,lon,lat,dlondx,dlondy,dlondz,sph2cart_matrix,metric_lonlat,fc,stat,IA1,IA2)
+          !$OMP PARALLEL DO PRIVATE(i,lon,lat,dlondx,dlondy,dlondz,sph2cart_matrix,fc,stat,IA1,IA2)
           do j = jds, jde
             do i = ids, ide
               lon = mesh%lon(i,j,k)
@@ -198,11 +197,6 @@
               sph2cart_matrix(2,1) = dlatdx
               sph2cart_matrix(2,2) = dlatdy
               sph2cart_matrix(2,3) = dlatdz
-              
-              metric_lonlat(1,1) = cos(lat)
-              metric_lonlat(1,2) = 0.
-              metric_lonlat(2,1) = 0.
-              metric_lonlat(2,2) = 1.
               
               !dxdxi
               fc(1:stencil_width) = x_tmp(i-xhalo:i+xhalo,j,k)
@@ -230,7 +224,7 @@
               
               mesh%sqrtG(i,j,k) = sqrt(det(mesh%matrixG(:,:,i,j,k)))
               
-              mesh%matrixA(:,:,i,j,k) = matmul(metric_lonlat,matmul(sph2cart_matrix,mesh%jab(:,:,i,j,k)))
+              mesh%matrixA(:,:,i,j,k) = matmul(sph2cart_matrix,mesh%jab(:,:,i,j,k))
               
               if(abs(lat*R2D)/=90)then
                 call BRINV(2,mesh%matrixA(:,:,i,j,k),mesh%matrixIA(:,:,i,j,k),stat)
@@ -245,10 +239,10 @@
                 IA1(2,1) = sin(lon)
                 IA1(2,2) = cos(lon)
                 
-                IA2(1,1) = cos(pi/4.)**2
+                IA2(1,1) = 1.
                 IA2(1,2) = 0.
                 IA2(2,1) = 0.
-                IA2(2,2) = cos(pi/4.)**2
+                IA2(2,2) = 1.
                 
                 mesh%matrixIA(:,:,i,j,k) = matmul(IA2,IA1)
                 !print*,mesh%matrixIA(:,:,i,j,k)
@@ -259,10 +253,10 @@
                 IA1(2,1) = sin(lon)
                 IA1(2,2) = cos(lon)
                 
-                IA2(1,1) = cos(pi/4.)**2
+                IA2(1,1) = 1.
                 IA2(1,2) = 0.
                 IA2(2,1) = 0.
-                IA2(2,2) = cos(pi/4.)**2
+                IA2(2,2) = 1.
                 
                 mesh%matrixIA(:,:,i,j,k) = matmul(IA2,IA1)
                 !print*,mesh%matrixIA(:,:,i,j,k)

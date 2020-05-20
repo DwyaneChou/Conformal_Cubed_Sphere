@@ -17,6 +17,7 @@ module output_mod
       integer patch_dim_id
       integer x_id,y_id,z_id
       integer lon_id,lat_id
+      integer xi_id,eta_id
       integer jab_id
       integer sqrtG_id
       integer matrixG_id
@@ -39,6 +40,8 @@ module output_mod
       status = nf90_def_var(ncid,'z'  ,NF90_DOUBLE,(/lon_dim_id,lat_dim_id,patch_dim_id/),z_id       )
       status = nf90_def_var(ncid,'lon',NF90_DOUBLE,(/lon_dim_id,lat_dim_id,patch_dim_id/),lon_id     )
       status = nf90_def_var(ncid,'lat',NF90_DOUBLE,(/lon_dim_id,lat_dim_id,patch_dim_id/),lat_id     )
+      status = nf90_def_var(ncid,'xi' ,NF90_DOUBLE,(/lon_dim_id,lat_dim_id,patch_dim_id/),xi_id      )
+      status = nf90_def_var(ncid,'eta',NF90_DOUBLE,(/lon_dim_id,lat_dim_id,patch_dim_id/),eta_id     )
       
       status = nf90_def_var(ncid,'jab'     ,NF90_DOUBLE,(/three_dim_id,two_dim_id,lon_dim_id,lat_dim_id,patch_dim_id/),jab_id     )
       status = nf90_def_var(ncid,'sqrtG'   ,NF90_DOUBLE,(/                        lon_dim_id,lat_dim_id,patch_dim_id/),sqrtG_id   )
@@ -61,6 +64,8 @@ module output_mod
       status = nf90_put_att(ncid,lon_id            ,'units'    ,'degree_east' )
       status = nf90_put_att(ncid,lat_id            ,'units'    ,'degree_north')
       
+      status = nf90_put_att(ncid,xi_id             ,'long_name','x coordinate in local panel' )
+      status = nf90_put_att(ncid,eta_id            ,'long_name','y coordinate in local panel'  )
       status = nf90_put_att(ncid,lon_id            ,'long_name','longitude on sphere coordinate for Cells' )
       status = nf90_put_att(ncid,lat_id            ,'long_name','latitude on sphere coordinate for Cells'  )
       status = nf90_put_att(ncid,jab_id            ,'long_name','jacobian matrix between cartesian coordinate and local panel'  )
@@ -71,22 +76,26 @@ module output_mod
       status = nf90_put_att(ncid,matrixIA_id       ,'long_name','IA matrix for converting spherical vector to contravariant'  )
       
       ! Define coordinates
+      status = nf90_put_att(ncid, xi_id             ,'_CoordinateAxisTypes','lon lat nPatch')
+      status = nf90_put_att(ncid, eta_id            ,'_CoordinateAxisTypes','lon lat nPatch')
+      status = nf90_put_att(ncid, lon_id            ,'_CoordinateAxisTypes','lon lat nPatch')
+      status = nf90_put_att(ncid, lat_id            ,'_CoordinateAxisTypes','lon lat nPatch')
       status = nf90_put_att(ncid, x_id              ,'_CoordinateAxisTypes','lon lat nPatch')
       status = nf90_put_att(ncid, y_id              ,'_CoordinateAxisTypes','lon lat nPatch')
       status = nf90_put_att(ncid, z_id              ,'_CoordinateAxisTypes','lon lat nPatch')
-      status = nf90_put_att(ncid, lon_id            ,'_CoordinateAxisTypes','lon lat nPatch')
-      status = nf90_put_att(ncid, lat_id            ,'_CoordinateAxisTypes','lon lat nPatch')
       status = nf90_put_att(ncid, sqrtG_id          ,'_CoordinateAxisTypes','lon lat nPatch')
       if(status/=nf90_noerr) call handle_err(status)
       
       status = nf90_enddef(ncid)
       if(status/=nf90_noerr) call handle_err(status)
       
+      status = nf90_put_var(ncid,xi_id      , mesh%xi  / D2M)
+      status = nf90_put_var(ncid,eta_id     , mesh%eta / D2M)
+      status = nf90_put_var(ncid,lon_id     , mesh%lon * R2D)
+      status = nf90_put_var(ncid,lat_id     , mesh%lat * R2D)
       status = nf90_put_var(ncid,x_id       , mesh%x        )
       status = nf90_put_var(ncid,y_id       , mesh%y        )
       status = nf90_put_var(ncid,z_id       , mesh%z        )
-      status = nf90_put_var(ncid,lon_id     , mesh%lon * R2D)
-      status = nf90_put_var(ncid,lat_id     , mesh%lat * R2D)
       
       status = nf90_put_var(ncid,jab_id     , mesh%jab     )
       status = nf90_put_var(ncid,sqrtG_id   , mesh%sqrtG   )
