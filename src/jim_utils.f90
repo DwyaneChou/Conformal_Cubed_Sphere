@@ -45,9 +45,12 @@ subroutine tay(z, ra, n, w)
    integer :: i
 
    w = 0.0
-   do i = n, 1, -1
-      w = (w + ra(i))*z
-   end do
+   !do i = n, 1, -1
+   !   w = (w + ra(i))*z
+   !end do
 
+   do i = 1,n
+      w = w + ra(i) * z**i
+   end do
 end subroutine tay
 end module jim_utils
