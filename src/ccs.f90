@@ -13,8 +13,8 @@
       
       integer, parameter :: nt   = 20
       integer, parameter :: ntay = 30
-      real   , parameter :: r    = 0.99
-      integer, parameter :: n    = 180
+      real   , parameter :: r    = 0.95
+      integer, parameter :: n    = 360
       integer, parameter :: nh   = n/2
       
        real(kind=rx), dimension(1200) :: work
@@ -47,18 +47,19 @@
           cang = cdang1*i - 0.25 * pi * ci
           !print*,i,dble(cang/ci*180./pi)
           z = r*exp(cang)
-          z = 1. - z
+          !z = 1. - z
           call toct ( z, w )
           !call tay(z**4,a,ntay,w)
-          w     = w**(1./3.)
-          w     = ( 1. - w ) / ( 1. + w/2. )
-          w     = w**3.
-          u     = real(w)
-          v     = aimag(w)
-           ra(i)   = u
-           qa(i)   = -v
-           ra(n-i) = u
-           qa(n-i) = v
+          !w       = w**(1./3.)
+          !w       = ( 1. - w ) / ( 1. + w/2. )
+          !w       = w**3.
+                  
+          u       = real(w)
+          v       = aimag(w)
+          ra(i)   = u
+          qa(i)   = -v
+          ra(n-i) = u
+          qa(n-i) = v
         enddo
         qa(0)  = 0.0
         qa(nh) = 0.0
@@ -92,42 +93,46 @@
         
         x = real(z)
         y = aimag(z)
-        if ( x > 0.5_rx ) then
+        kx = x > 0.5_rx
+        ky = y > 0.5_rx
+        kxy = y > x
+        
+        if ( kx ) then
            x = 1.0 - x
         endif
-        if (y > 0.5_rx) then
+        if ( ky ) then
            y = 1.0 - y
         endif
-        if (y > x) then
+        if ( y > x ) then
            t = x
            x = y
            y = t
         endif
+        
         zt = cmplx(x,y,kind=rx)
         zt = zt**4
         call tay(zt,a,ntay,w)
-        if ( w /= (0.0,0.0) ) then
-           w = w**(1./3.)
-        end if
-        
-        if ( kx1 .or. kxy1 ) then
-           w = w/abs(w)**2
-        end if
+        w = w**(1./3.)
+        w = ( 1. - w ) / ( 1. + w/2. )
+        w = w**3.
         
         x = real(w)
         y = aimag(w)
+        
+        if ( kx ) then
+           x = -x
+        end if
+        if ( ky ) then
+           y = -y
+        end if
         if ( kxy ) then
            t = x
            x = y
            y = t
         endif
-        if ( ky ) then
-           y = -y
-        end if
-        if ( kx ) then
-           x = -x
-        end if
+        
         w = cmplx(x,y,kind=rx)
+        
       end subroutine toct
     
     end program CCS
