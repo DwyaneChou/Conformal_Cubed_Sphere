@@ -47,12 +47,12 @@
           cang = cdang1*i - 0.25 * pi * ci
           !print*,i,dble(cang/ci*180./pi)
           z = r*exp(cang)
-          !z = 1. - z
-          call toct ( z, w )
-          !call tay(z**4,a,ntay,w)
-          !w       = w**(1./3.)
-          !w       = ( 1. - w ) / ( 1. + w/2. )
-          !w       = w**3.
+          z = 1. - z
+          !call toct ( z, w )
+          call tay(z**4,a,ntay,w)
+          w       = w**(1./3.)
+          w       = ( 1. - w ) / ( 1. + w/2. )
+          w       = w**3.
                   
           u       = real(w)
           v       = aimag(w)
