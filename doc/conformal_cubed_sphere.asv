@@ -1,4 +1,4 @@
-% clc
+clc
 clear
 
 iPatch = 2;
@@ -19,8 +19,7 @@ lon1d = reshape(lon,[],1);
 lat1d = reshape(lat,[],1);
 
 nx = size(x,1);
-ny = size(x,2);
-np = size(x,3);
+ny = size(x)
 
 radius = 1;
 [xp,yp,zp] = sph2cart(lon1d*D2R,lat1d*D2R,radius);
@@ -50,16 +49,12 @@ scatter3(x1d,y1d,z1d,'.')
 
 
 % Calculate sphere mesh
-xc = x(2:2:end,2:2:end,:);
-yc = y(2:2:end,2:2:end,:);
-zc = z(2:2:end,2:2:end,:);
-nc = size(xc,1);
-[xx,xy] = extend_mesh(xc);
-[yx,yy] = extend_mesh(yc);
-[zx,zy] = extend_mesh(zc);
+[xx,xy] = extend_mesh(x);
+[yx,yy] = extend_mesh(y);
+[zx,zy] = extend_mesh(z);
 
 dx  = 90/nc;
-x1d = dx/2:90/nc:360-dx/2;
+x1d = 0:90/nc:360-dx;
 x1d = x1d * D2R;
 dx  = dx*D2R;
 
@@ -71,9 +66,9 @@ for i = 1:nc
     pzx(i) = csape(x1d,zx(:,i),'periodic');
     pzy(i) = csape(x1d,zy(i,:),'periodic');
 
-    dXdx(:,i) = pxx(i).coefs(1:nc,3);
-    dYdx(:,i) = pyx(i).coefs(1:nc,3);
-    dZdx(:,i) = pzx(i).coefs(1:nc,3);
+    dXdx(:,i) = pxx(i).coefs(1:nx,3);
+    dYdx(:,i) = pyx(i).coefs(1:nx,3);
+    dZdx(:,i) = pzx(i).coefs(1:nx,3);
 
     dXdy(i,:) = pxy(i).coefs(1:nc,3);
     dYdy(i,:) = pyy(i).coefs(1:nc,3);
@@ -102,7 +97,6 @@ end
 
 nuerical_sphere_area = 6 * sum(sum(area));
 sphere_area_error    = 4*pi - nuerical_sphere_area;
-disp(['Sphere area error = ',num2str(sphere_area_error,'%.15e')])
 
 % Extend mesh
 function [fx,fy] = extend_mesh(f)

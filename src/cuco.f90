@@ -70,7 +70,7 @@ use pmat4, only: ztoc
 implicit none
 private
 public:: mcuco,co1,co2, inicuco,xmtoxc,xctoxm,xmtoxm
-integer(spi),parameter   :: mcuco=600
+integer(spi),parameter   :: mcuco=50
 real(dp),dimension(mcuco):: co1,co2
 real(dp),dimension(3,3,6):: rotp0
 logical                  :: lnotinicuco=T ! true when NOT initialized yet
@@ -94,7 +94,6 @@ subroutine inicuco!  [inicuco]
 !=============================================================================
 use pcoco, only: set_cuco
 implicit none
-integer i
 !=============================================================================
 call set_cuco(mcuco,co1,co2)
 

@@ -760,7 +760,7 @@ implicit none
 integer(spi),         intent(in ):: m
 real(dp),dimension(m),intent(out):: co1,co2
 !-----------------------------------------------------------------------------
-integer(spi),parameter:: n=3600,& ! <- number of test points in each test arc
+integer(spi),parameter:: n=120,& ! <- number of test points in each test arc
                     n2=n*2,&! <- number of points that complete a minimal cycle
                     nm=n-1,n2m=n2-1,nit=40, &
                     f=4,v=3,v0=(2*f)/(f-2)! <- Face and vertex Symmetries

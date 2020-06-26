@@ -72,10 +72,6 @@ module parameters_mod
     ifs = 1
     ife = Nf
     
-    !! Convert Degree to map coordinate
-    !dx = dx * R2M
-    !dy = dy * R2M
-    
   end subroutine initParameters
   
 end module parameters_mod
