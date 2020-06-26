@@ -14,7 +14,7 @@ module output_mod
       integer ncid
       integer lon_dim_id,lat_dim_id
       integer patch_dim_id
-      integer x_id,y_id
+      integer x_id,y_id,z_id
       integer lon_id,lat_id
       
       status = nf90_create(ncFile, NF90_CLOBBER + NF90_NETCDF4 , ncid)
@@ -27,6 +27,7 @@ module output_mod
       
       status = nf90_def_var(ncid,'x'  ,NF90_DOUBLE,(/lon_dim_id,lat_dim_id,patch_dim_id/),x_id       )
       status = nf90_def_var(ncid,'y'  ,NF90_DOUBLE,(/lon_dim_id,lat_dim_id,patch_dim_id/),y_id       )
+      status = nf90_def_var(ncid,'z'  ,NF90_DOUBLE,(/lon_dim_id,lat_dim_id,patch_dim_id/),z_id       )
       status = nf90_def_var(ncid,'lon',NF90_DOUBLE,(/lon_dim_id,lat_dim_id,patch_dim_id/),lon_id     )
       status = nf90_def_var(ncid,'lat',NF90_DOUBLE,(/lon_dim_id,lat_dim_id,patch_dim_id/),lat_id     )
       if(status/=nf90_noerr) call handle_err(status)
@@ -50,6 +51,7 @@ module output_mod
       ! Define coordinates
       status = nf90_put_att(ncid, x_id              ,'_CoordinateAxisTypes','lon lat nPatch')
       status = nf90_put_att(ncid, y_id              ,'_CoordinateAxisTypes','lon lat nPatch')
+      status = nf90_put_att(ncid, z_id              ,'_CoordinateAxisTypes','lon lat nPatch')
       status = nf90_put_att(ncid, lon_id            ,'_CoordinateAxisTypes','lon lat nPatch')
       status = nf90_put_att(ncid, lat_id            ,'_CoordinateAxisTypes','lon lat nPatch')
       if(status/=nf90_noerr) call handle_err(status)
@@ -59,6 +61,7 @@ module output_mod
       
       status = nf90_put_var(ncid,x_id       , mesh%x        )
       status = nf90_put_var(ncid,y_id       , mesh%y        )
+      status = nf90_put_var(ncid,z_id       , mesh%z        )
       status = nf90_put_var(ncid,lon_id     , mesh%lon * R2D)
       status = nf90_put_var(ncid,lat_id     , mesh%lat * R2D)
       if(status/=nf90_noerr) call handle_err(status)

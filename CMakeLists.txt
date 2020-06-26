@@ -41,21 +41,21 @@ endif ()
 
 set(source_files
   src/ccs.f90
-  src/jimcc_m.f90
-  src/parm_m.f90
-  src/precis_m.f90
   src/constants_mod.f90
   src/mesh_mod.f90
   src/math_mod.f90
   src/output_mod.f90
   src/parameters_mod.f90
-  src/ind_m.f90
-  src/jim_utils.f90
-  src/newmpar_m.f90
-  src/nfft_m.f90
-  src/setxyz_m.f90
-  src/xyzinfo_m.f90
-  src/indices_m.f90
+  src/cuco.f90
+  src/pcoco.f90
+  src/pfft.f90
+  src/pfft1.f90
+  src/pietc.f90
+  src/pietc_s.f90
+  src/pkind.f90
+  src/pmat.f90
+  src/pmat4.f90
+  src/pmat5.f90
 )
 
 add_library(CCS ${source_files})

@@ -4,8 +4,6 @@ module parameters_mod
   
   ! Namelist parameters
   ! Domain
-  integer :: ntang  ! ntang=1 for tang. vectors by finite diffs, ntang=2 for map factors by finite diffs too
-  real    :: schmidt! schmidt coef 1 for uniform cubed sphere
   real    :: dx     !  grid-spacing in the x-direction
   real    :: dy     !  grid-spacing in the y-direction
   
@@ -28,7 +26,7 @@ module parameters_mod
   real, parameter :: y_min = -45.   !  start location of y-direction
   real, parameter :: y_max =  45.   !  end location of y-direction
   
-  namelist /domain/ dx,dy,schmidt,ntang
+  namelist /domain/ dx,dy
   
   contains
   

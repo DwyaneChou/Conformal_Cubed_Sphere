@@ -1,6 +1,4 @@
 &domain
- dx      = 6,
- dy      = 6,
- !ntang   = 0,
- !schmidt = 1.
+ dx      = 1,
+ dy      = 1,
 /

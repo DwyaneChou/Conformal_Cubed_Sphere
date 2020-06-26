@@ -2,57 +2,34 @@
     program CCS
       use parameters_mod
       use mesh_mod
-      use setxyz_m
-      use xyzinfo_m
-      use newmpar_m, only : il,jl,kl,npanels,ifull,iquad
-      use ind_m
       use output_mod
+      use cuco
+      use math_mod
       implicit none
       
-      integer             :: diag
-      integer             :: id,jd
-      real                :: rlong0, rlat0
-      !real                :: schmidt
-      real   , parameter  :: schm13 = 0.1
-      !integer             :: ntang
-      real                :: rearth
-      
-      integer iq
+      real,dimension(2):: xm
+      real,dimension(3):: xc
+
       integer i,j,n
       
       call initParameters
       
       call initMesh
-      
-      il      = nx
-      jl      = il * 6
-      kl      = 1
-      npanels = jl/il - 1
-      ifull   = il * jl
-      iquad   = 1+il*((8*npanels)/(npanels+4))
-      diag    = 3
-      id      = 1
-      jd      = 1
-      rlong0  = 0.
-      rlat0   = 0.
-      !schmidt = 1.
-      !ntang   = 0
-      rearth  = radius
-      
-      call setxyz( il, jl, kl, npanels, ifull, iquad, diag, id, jd, &
-                   rlong0, rlat0, schmidt, schm13, ntang, rearth )
-      call setaxu(ifull)
-      
-      do n = 0, npanels 
+
+      do n = 1,Nf
+        !$OMP PARALLEL DO PRIVATE(xm,xc)
          do j = 1, ny
             do i = 1, nx
-              iq = ind(i,j,n)
-              mesh%x  (i,j,n+1) = x    (iq)
-              mesh%y  (i,j,n+1) = y    (iq)
-              mesh%lon(i,j,n+1) = rlong(iq)
-              mesh%lat(i,j,n+1) = rlat (iq)
+              xm(1) = mesh%xi (i,j,n)
+              xm(2) = mesh%eta(i,j,n)
+              call xmtoxc(xm,xc,n)
+              mesh%x(i,j,n) = xc(1)
+              mesh%y(i,j,n) = xc(2)
+              mesh%z(i,j,n) = xc(3)
+              call cart2sph(mesh%lon(i,j,n),mesh%lat(i,j,n),mesh%x(i,j,n),mesh%y(i,j,n),mesh%z(i,j,n))
             end do! i loop 
-         end do! j loop 
+         end do! j loop
+         !$OMP END PARALLEL DO
       end do! n loop 
       
       call history_init
