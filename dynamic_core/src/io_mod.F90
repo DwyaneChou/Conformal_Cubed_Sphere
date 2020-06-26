@@ -9,7 +9,7 @@ module io_mod
   use ghost_mod
   implicit none
     
-    character(13) :: ncFile = 'mcv_output.nc'
+    character(14) :: ncFile = 'ccsm_output.nc'
     
     contains
     subroutine read_mesh
@@ -20,9 +20,6 @@ module io_mod
       integer x_id,y_id,z_id
       integer xi_id,eta_id
       integer jab_id
-      integer sqrtG_id
-      integer matrixG_id,matrixIG_id
-      integer matrixA_id,matrixIA_id
       
       integer iCell,jCell,iPatch
       integer ic,jc
@@ -49,9 +46,9 @@ module io_mod
       status = nf90_get_att(ncid,NF90_GLOBAL,'ifs'       ,ifs       )
       status = nf90_get_att(ncid,NF90_GLOBAL,'ife'       ,ife       )
       
-      its = ids
+      its = 1
       ite = ( ide - ids ) / 2
-      jts = jds
+      jts = 1
       jte = ( jde - jds ) / 2
       
       dx = dx * D2R
@@ -70,10 +67,10 @@ module io_mod
       Ntheta  = nPVy
       
       ! Calculate starting and ending index for physical domain
-      ics  = 1  - xhalo
-      ice  = Nx + xhalo
-      jcs  = 1  - yhalo
-      jce  = Ny + yhalo
+      ics  = its - xhalo
+      ice  = ite + xhalo
+      jcs  = jts - yhalo
+      jce  = jte + yhalo
       
       Nx_halo = ice - ics + 1
       Ny_halo = jce - jcs + 1
@@ -91,23 +88,23 @@ module io_mod
       
       call initMesh
       
-      status = nf90_inq_varid(ncid,'lon'        ,lon_id     )
-      status = nf90_inq_varid(ncid,'lat'        ,lat_id     )
-      status = nf90_inq_varid(ncid,'xi'         ,xi_id      )
-      status = nf90_inq_varid(ncid,'eta'        ,eta_id     )
-      status = nf90_inq_varid(ncid,'x'          ,x_id       )
-      status = nf90_inq_varid(ncid,'y'          ,y_id       )
-      status = nf90_inq_varid(ncid,'z'          ,z_id       )
-      status = nf90_inq_varid(ncid,'jab'        ,jab_id     )
+      status = nf90_inq_varid(ncid,'lon',lon_id     )
+      status = nf90_inq_varid(ncid,'lat',lat_id     )
+      status = nf90_inq_varid(ncid,'xi' ,xi_id      )
+      status = nf90_inq_varid(ncid,'eta',eta_id     )
+      status = nf90_inq_varid(ncid,'x'  ,x_id       )
+      status = nf90_inq_varid(ncid,'y'  ,y_id       )
+      status = nf90_inq_varid(ncid,'z'  ,z_id       )
+      status = nf90_inq_varid(ncid,'jab',jab_id     )
       
-      status = nf90_get_var(ncid,lon_id     , mesh%lon_ext     )
-      status = nf90_get_var(ncid,lat_id     , mesh%lat_ext     )
-      status = nf90_get_var(ncid,xi_id      , mesh%xi_ext      )
-      status = nf90_get_var(ncid,eta_id     , mesh%eta_ext     )
-      status = nf90_get_var(ncid,x_id       , mesh%x_ext       )
-      status = nf90_get_var(ncid,y_id       , mesh%y_ext       )
-      status = nf90_get_var(ncid,z_id       , mesh%z_ext       )
-      status = nf90_get_var(ncid,jab_id     , mesh%jab_ext     )
+      status = nf90_get_var(ncid,lon_id, mesh%lon_ext)
+      status = nf90_get_var(ncid,lat_id, mesh%lat_ext)
+      status = nf90_get_var(ncid,xi_id , mesh%xi_ext )
+      status = nf90_get_var(ncid,eta_id, mesh%eta_ext)
+      status = nf90_get_var(ncid,x_id  , mesh%x_ext  )
+      status = nf90_get_var(ncid,y_id  , mesh%y_ext  )
+      status = nf90_get_var(ncid,z_id  , mesh%z_ext  )
+      status = nf90_get_var(ncid,jab_id, mesh%jab_ext)
       if(status/=nf90_noerr) call handle_err(status)
       
       mesh%lon_ext = mesh%lon_ext * D2R
@@ -117,7 +114,7 @@ module io_mod
       mesh%y_ext = mesh%y_ext * radius
       mesh%z_ext = mesh%z_ext * radius
       
-      mesh%jab_ext      = mesh%jab_ext   * radius
+      mesh%jab_ext = mesh%jab_ext * radius
       
       mesh%lon = FillValue
       mesh%lat = FillValue
@@ -155,7 +152,7 @@ module io_mod
       
       call CubedSphereFillJab(mesh%jab)
       
-      ! Reset matrices
+      ! Reset matrices in physical domain
       do k = ifs,ife
         do j = jcs,jce
           do i = ics,ice
@@ -222,6 +219,7 @@ module io_mod
         enddo
       enddo
       
+      ! Reset matrices in extended domain
       do k = ifs,ife
         do j = jds,jde
           do i = ids,ide

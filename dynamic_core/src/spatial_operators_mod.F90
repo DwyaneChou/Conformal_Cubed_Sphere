@@ -67,6 +67,9 @@ MODULE spatial_operators_mod
             dudy     (i,j,iPatch) = (-stat%u(i,jm3,iPatch) + 9. * stat%u(i,jm2,iPatch) - 45. * stat%u(i,jm1,iPatch) + 45. * stat%u(i,jp1,iPatch) - 9. * stat%u(i,jp2,iPatch) + stat%u(i,jp3,iPatch) ) / ( 60. * dy )
             
             vorticity(i,j,iPatch) = dvdx(i,j,iPatch) - dudy(i,j,iPatch) + mesh%sqrtG(i,j,iPatch) * mesh%f(i,j,iPatch)
+            !vorticity(i,j,iPatch) = 0.5*( stat%v(ip1,j,iPatch) - stat%v(im1,j,iPatch) - sign(1.,stat%u(i,j,iPatch))*(stat%v(ip1,j,iPatch)+stat%v(im1,j,iPatch)-2.*stat%v(i,j,iPatch)) )/dx &
+            !                      - 0.5*( stat%u(i,jp1,iPatch) - stat%u(i,jm1,iPatch) - sign(1.,stat%v(i,j,iPatch))*(stat%u(i,jp1,iPatch)+stat%u(i,jm1,iPatch)-2.*stat%u(i,j,iPatch)) )/dy &
+            !                      + mesh%sqrtG(i,j,iPatch) * mesh%f(i,j,iPatch)
           enddo
         enddo
       enddo

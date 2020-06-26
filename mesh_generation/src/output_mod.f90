@@ -14,25 +14,32 @@ module output_mod
       integer ncid
       integer lon_dim_id,lat_dim_id
       integer patch_dim_id
+      integer three_dim_id
+      integer two_dim_id
+      
       integer xi_id,eta_id
       integer x_id,y_id,z_id
       integer lon_id,lat_id
+      integer jab_id
       
       status = nf90_create(ncFile, NF90_CLOBBER + NF90_NETCDF4 , ncid)
       if(status/=nf90_noerr) call handle_err(status)
       
-      status = nf90_def_dim(ncid,'lon'   ,Nx,lon_dim_id )
-      status = nf90_def_dim(ncid,'lat'   ,Ny,lat_dim_id )
+      status = nf90_def_dim(ncid,'three' ,3 ,three_dim_id)
+      status = nf90_def_dim(ncid,'two'   ,2 ,two_dim_id  )
+      status = nf90_def_dim(ncid,'lon'   ,Nx,lon_dim_id  )
+      status = nf90_def_dim(ncid,'lat'   ,Ny,lat_dim_id  )
       status = nf90_def_dim(ncid,'nPatch',Nf,patch_dim_id)
       if(status/=nf90_noerr) call handle_err(status)
       
-      status = nf90_def_var(ncid,'xi ',NF90_DOUBLE,(/lon_dim_id,lat_dim_id,patch_dim_id/),xi_id )
-      status = nf90_def_var(ncid,'eta',NF90_DOUBLE,(/lon_dim_id,lat_dim_id,patch_dim_id/),eta_id)
-      status = nf90_def_var(ncid,'x'  ,NF90_DOUBLE,(/lon_dim_id,lat_dim_id,patch_dim_id/),x_id  )
-      status = nf90_def_var(ncid,'y'  ,NF90_DOUBLE,(/lon_dim_id,lat_dim_id,patch_dim_id/),y_id  )
-      status = nf90_def_var(ncid,'z'  ,NF90_DOUBLE,(/lon_dim_id,lat_dim_id,patch_dim_id/),z_id  )
-      status = nf90_def_var(ncid,'lon',NF90_DOUBLE,(/lon_dim_id,lat_dim_id,patch_dim_id/),lon_id)
-      status = nf90_def_var(ncid,'lat',NF90_DOUBLE,(/lon_dim_id,lat_dim_id,patch_dim_id/),lat_id)
+      status = nf90_def_var(ncid,'xi ',NF90_DOUBLE,(/                        lon_dim_id,lat_dim_id,patch_dim_id/),xi_id )
+      status = nf90_def_var(ncid,'eta',NF90_DOUBLE,(/                        lon_dim_id,lat_dim_id,patch_dim_id/),eta_id)
+      status = nf90_def_var(ncid,'x'  ,NF90_DOUBLE,(/                        lon_dim_id,lat_dim_id,patch_dim_id/),x_id  )
+      status = nf90_def_var(ncid,'y'  ,NF90_DOUBLE,(/                        lon_dim_id,lat_dim_id,patch_dim_id/),y_id  )
+      status = nf90_def_var(ncid,'z'  ,NF90_DOUBLE,(/                        lon_dim_id,lat_dim_id,patch_dim_id/),z_id  )
+      status = nf90_def_var(ncid,'lon',NF90_DOUBLE,(/                        lon_dim_id,lat_dim_id,patch_dim_id/),lon_id)
+      status = nf90_def_var(ncid,'lat',NF90_DOUBLE,(/                        lon_dim_id,lat_dim_id,patch_dim_id/),lat_id)
+      status = nf90_def_var(ncid,'jab',NF90_DOUBLE,(/three_dim_id,two_dim_id,lon_dim_id,lat_dim_id,patch_dim_id/),jab_id)
       if(status/=nf90_noerr) call handle_err(status)
       
       !print*,'nf90_put_att'
@@ -59,6 +66,7 @@ module output_mod
       status = nf90_put_att(ncid, z_id      ,'_CoordinateAxisTypes','lon lat nPatch')
       status = nf90_put_att(ncid, lon_id    ,'_CoordinateAxisTypes','lon lat nPatch')
       status = nf90_put_att(ncid, lat_id    ,'_CoordinateAxisTypes','lon lat nPatch')
+      status = nf90_put_att(ncid, jab_id    ,'_CoordinateAxisTypes','three two lon lat nPatch')
       if(status/=nf90_noerr) call handle_err(status)
       
       status = nf90_enddef(ncid)
@@ -71,6 +79,7 @@ module output_mod
       status = nf90_put_var(ncid,z_id       , mesh%z        )
       status = nf90_put_var(ncid,lon_id     , mesh%lon * R2D)
       status = nf90_put_var(ncid,lat_id     , mesh%lat * R2D)
+      status = nf90_put_var(ncid,jab_id     , mesh%jab      )
       if(status/=nf90_noerr) call handle_err(status)
       
       status = nf90_close(ncid)

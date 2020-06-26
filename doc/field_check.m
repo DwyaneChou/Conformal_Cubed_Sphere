@@ -4,11 +4,11 @@
 
 % var_name = 'v';
 % var_name = 'phit';
-% var_name = 'zonal_wind';
-var_name = 'meridional_wind';
+var_name = 'zonal_wind';
+% var_name = 'meridional_wind';
 it       = 10;
 
-nc_file = '..\run\mcv_output.nc';
+nc_file = '..\dynamic_core\run\ccsm_output.nc';
 
 dx         = ncreadatt(nc_file,'/','dx');
 % ids        = ncreadatt(nc_file,'/','ids');
@@ -55,7 +55,8 @@ y   = -90:res:90;
 var_plot = griddata(lon1d,lat1d,var1d,lon2d,lat2d,'linear');
 
 figure
-pcolor(lon2d,lat2d,var_plot)
-shading interp
+plt=pcolor(lon2d,lat2d,var_plot);
+set(plt,'EdgeColor','none')
+% shading interp
 % set(gca,'CLim',[-16,38])
 colormap(jet)

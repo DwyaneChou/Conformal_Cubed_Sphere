@@ -7,6 +7,9 @@ module parameters_mod
   real    :: dx     !  grid-spacing in the x-direction
   real    :: dy     !  grid-spacing in the y-direction
   
+  integer, parameter :: xhalo = 6 !  halo number of x-diretion
+  integer, parameter :: yhalo = 6 !  halo number of y-diretion
+  
   ! Index parameter
   integer :: ids      ! The starting index in the x-direction (Physical domain)
   integer :: ide      ! The ending index in the x-direction  (Physical domain)
@@ -25,6 +28,13 @@ module parameters_mod
   real, parameter :: x_max =  45.   !  end location of x-direction
   real, parameter :: y_min = -45.   !  start location of y-direction
   real, parameter :: y_max =  45.   !  end location of y-direction
+  
+  ! For filling ghost
+  integer :: nPVHalo
+  integer :: ips      ! The starting index in the x-direction
+  integer :: ipe      ! The ending index in the x-direction  
+  integer :: jps      ! The starting index in the y-direction
+  integer :: jpe      ! The ending index in the y-direction  
   
   namelist /domain/ dx,dy
   
@@ -71,6 +81,14 @@ module parameters_mod
     ! Setting the starting patch index and ending patch index
     ifs = 1
     ife = Nf
+    
+    ! Calculate starting and ending index for memory array
+    ips  = ids - xhalo
+    ipe  = ide + xhalo
+    jps  = jds - yhalo
+    jpe  = jde + yhalo
+    
+    nPVHalo = xhalo
     
   end subroutine initParameters
   

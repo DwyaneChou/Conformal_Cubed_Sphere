@@ -369,6 +369,35 @@ module math_mod
     end do
   end function cofactor
   
+  function center_difference(f,dh)
+    real              :: center_difference
+    real,dimension(:) :: f
+    real              :: dh
+    
+    integer ids,ide
+    integer ic
+    
+    ids = lbound(f,1)
+    ide = ubound(f,1)
+    
+    ic = ( ide - ids + 1 ) / 2 + 1
+    
+    !! 2nd
+    !center_difference = ( f(ic+1) - f(ic-1) ) / ( 2. * dh )
+    !!print*,'2nd',center_difference
+    
+    !! 4th
+    !center_difference = ( f(ic-2) - 8.*f(ic-1) + 8.*f(ic+1) - f(ic+2) ) / ( 12. * dh )
+    !!print*,'4th',center_difference
+    
+    ! 6th
+    center_difference = ( -f(ic-3) + 9. * f(ic-2) - 45. * f(ic-1) + 45. * f(ic+1) - 9. * f(ic+2) + f(ic+3) ) / ( 60. * dh )
+    !print*,'6th',center_difference
+    
+    !print*,''
+    
+  end function center_difference
+  
       ! calculate inverse matrix of A_input
       ! N is the order of matrix A_input and A
       ! A is inverse A_input

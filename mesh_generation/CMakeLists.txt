@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.0.0 FATAL_ERROR)
 
-project(CCS LANGUAGES Fortran)
+project(ccs LANGUAGES Fortran)
 
 if (CMAKE_Fortran_COMPILER_ID MATCHES Intel)
   set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -Ofast -r8 -parallel")
@@ -44,6 +44,7 @@ set(source_files
   src/constants_mod.f90
   src/mesh_mod.f90
   src/math_mod.f90
+  src/ghost_mod.f90
   src/output_mod.f90
   src/parameters_mod.f90
   src/cuco.f90
@@ -58,9 +59,9 @@ set(source_files
   src/pmat5.f90
 )
 
-add_library(CCS ${source_files})
-target_link_libraries(CCS netcdf netcdff)
+add_library(ccs ${source_files})
+target_link_libraries(ccs netcdf netcdff)
 
 add_executable(ccs.exe src/ccs.F90)
-target_link_libraries(ccs.exe CCS)
+target_link_libraries(ccs.exe ccs)
 
