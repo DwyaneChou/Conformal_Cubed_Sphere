@@ -4,8 +4,9 @@ module parameters_mod
   
   ! Namelist parameters
   ! Domain
-  real    :: dx     !  grid-spacing in the x-direction
-  real    :: dy     !  grid-spacing in the y-direction
+  real          :: dx         ! grid-spacing in the x-direction
+  real          :: dy         ! grid-spacing in the y-direction
+  character(50) :: gen_method ! generation method, choose from 'CCAM' or 'Rancic'
   
   integer, parameter :: xhalo = 6 !  halo number of x-diretion
   integer, parameter :: yhalo = 6 !  halo number of y-diretion
@@ -36,7 +37,7 @@ module parameters_mod
   integer :: jps      ! The starting index in the y-direction
   integer :: jpe      ! The ending index in the y-direction  
   
-  namelist /domain/ dx,dy
+  namelist /domain/ dx,dy,gen_method
   
   contains
   

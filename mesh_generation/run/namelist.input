@@ -1,4 +1,5 @@
 &domain
- dx      = 1,
- dy      = 1,
+ dx         = 1,
+ dy         = 1,
+ gen_method = 'CCAM'
 /

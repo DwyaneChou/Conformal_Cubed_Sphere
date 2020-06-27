@@ -57,6 +57,9 @@ set(source_files
   src/pmat.f90
   src/pmat4.f90
   src/pmat5.f90
+  src/jimcc_m.f90
+  src/precis_m.f90
+  src/parm_m.f90
 )
 
 add_library(ccs ${source_files})
