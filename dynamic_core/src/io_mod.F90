@@ -223,63 +223,68 @@ module io_mod
       do k = ifs,ife
         do j = jds,jde
           do i = ids,ide
-            lon = mesh%lon_ext(i,j,k)
-            lat = mesh%lat_ext(i,j,k)
-            
-            if(lon/=FillValue .and. lat/=FillValue)then
-              dlondx = -sin(lon); dlatdx = -cos(lon)*sin(lat)
-              dlondy =  cos(lon); dlatdy = -sin(lon)*sin(lat)
-              dlondz = 0.       ; dlatdz =  cos(lat)
+            if((.not.(i==ids.and.j==jds)).and.&
+               (.not.(i==ids.and.j==jde)).and.&
+               (.not.(i==ide.and.j==jds)).and.&
+               (.not.(i==ide.and.j==jde)) )then
+              lon = mesh%lon_ext(i,j,k)
+              lat = mesh%lat_ext(i,j,k)
               
-              sph2cart_matrix(1,1) = dlondx
-              sph2cart_matrix(1,2) = dlondy
-              sph2cart_matrix(1,3) = dlondz
-              sph2cart_matrix(2,1) = dlatdx
-              sph2cart_matrix(2,2) = dlatdy
-              sph2cart_matrix(2,3) = dlatdz
-              
-              mesh%matrixG_ext(:,:,i,j,k) = matmul( transpose(mesh%jab_ext(:,:,i,j,k)), mesh%jab_ext(:,:,i,j,k) )
-              
-              call BRINV(2,mesh%matrixG_ext(:,:,i,j,k),mesh%matrixIG_ext(:,:,i,j,k),stat)
-              if(stat==0)stop 'Fail to calculate inverse of matrixG'
-              
-              mesh%sqrtG_ext(i,j,k) = sqrt(det(mesh%matrixG_ext(:,:,i,j,k)))
-              
-              mesh%matrixA_ext(:,:,i,j,k) = matmul(sph2cart_matrix,mesh%jab_ext(:,:,i,j,k))
-              
-              if(abs(lat*R2D)/=90)then
-                call BRINV(2,mesh%matrixA_ext(:,:,i,j,k),mesh%matrixIA_ext(:,:,i,j,k),stat)
-                if(stat==0)then
-                  print*,'Fail to calculate inverse of matrixA at i,j,k,det :',i,j,k,det(mesh%matrixA_ext(:,:,i,j,k))
-                  stop
+              if(lon/=FillValue .and. lat/=FillValue)then
+                dlondx = -sin(lon); dlatdx = -cos(lon)*sin(lat)
+                dlondy =  cos(lon); dlatdy = -sin(lon)*sin(lat)
+                dlondz = 0.       ; dlatdz =  cos(lat)
+                
+                sph2cart_matrix(1,1) = dlondx
+                sph2cart_matrix(1,2) = dlondy
+                sph2cart_matrix(1,3) = dlondz
+                sph2cart_matrix(2,1) = dlatdx
+                sph2cart_matrix(2,2) = dlatdy
+                sph2cart_matrix(2,3) = dlatdz
+                
+                mesh%matrixG_ext(:,:,i,j,k) = matmul( transpose(mesh%jab_ext(:,:,i,j,k)), mesh%jab_ext(:,:,i,j,k) )
+                
+                call BRINV(2,mesh%matrixG_ext(:,:,i,j,k),mesh%matrixIG_ext(:,:,i,j,k),stat)
+                if(stat==0)stop 'Fail to calculate inverse of matrixG'
+                
+                mesh%sqrtG_ext(i,j,k) = sqrt(det(mesh%matrixG_ext(:,:,i,j,k)))
+                
+                mesh%matrixA_ext(:,:,i,j,k) = matmul(sph2cart_matrix,mesh%jab_ext(:,:,i,j,k))
+                
+                if(abs(lat*R2D)/=90)then
+                  call BRINV(2,mesh%matrixA_ext(:,:,i,j,k),mesh%matrixIA_ext(:,:,i,j,k),stat)
+                  if(stat==0)then
+                    print*,'Fail to calculate inverse of matrixA at i,j,k,det :',i,j,k,det(mesh%matrixA_ext(:,:,i,j,k))
+                    stop
+                  endif
+                elseif(lat*R2D==90)then
+                  ! Replace by analytical approximation on north pole
+                  IA1(1,1) = cos(lon)
+                  IA1(1,2) = -sin(lon)
+                  IA1(2,1) = sin(lon)
+                  IA1(2,2) = cos(lon)
+                  
+                  IA2(1,1) = 1.
+                  IA2(1,2) = 0.
+                  IA2(2,1) = 0.
+                  IA2(2,2) = 1.
+                  
+                  mesh%matrixIA_ext(:,:,i,j,k) = matmul(IA2,IA1) * radius
+                  !print*,mesh%matrixIA(:,:,i,j,k)
+                elseif(lat*R2D==-90)then
+                  ! Replace by analytical approximation on south pole
+                  IA1(1,1) = -cos(lon)
+                  IA1(1,2) = sin(lon)
+                  IA1(2,1) = sin(lon)
+                  IA1(2,2) = cos(lon)
+                  
+                  IA2(1,1) = 1.
+                  IA2(1,2) = 0.
+                  IA2(2,1) = 0.
+                  IA2(2,2) = 1.
+                  
+                  mesh%matrixIA_ext(:,:,i,j,k) = matmul(IA2,IA1) * radius
                 endif
-              elseif(lat*R2D==90)then
-                ! Replace by analytical approximation on north pole
-                IA1(1,1) = cos(lon)
-                IA1(1,2) = -sin(lon)
-                IA1(2,1) = sin(lon)
-                IA1(2,2) = cos(lon)
-                
-                IA2(1,1) = 1.
-                IA2(1,2) = 0.
-                IA2(2,1) = 0.
-                IA2(2,2) = 1.
-                
-                mesh%matrixIA_ext(:,:,i,j,k) = matmul(IA2,IA1) * radius
-                !print*,mesh%matrixIA(:,:,i,j,k)
-              elseif(lat*R2D==-90)then
-                ! Replace by analytical approximation on south pole
-                IA1(1,1) = -cos(lon)
-                IA1(1,2) = sin(lon)
-                IA1(2,1) = sin(lon)
-                IA1(2,2) = cos(lon)
-                
-                IA2(1,1) = 1.
-                IA2(1,2) = 0.
-                IA2(2,1) = 0.
-                IA2(2,2) = 1.
-                
-                mesh%matrixIA_ext(:,:,i,j,k) = matmul(IA2,IA1) * radius
               endif
             endif
           enddo

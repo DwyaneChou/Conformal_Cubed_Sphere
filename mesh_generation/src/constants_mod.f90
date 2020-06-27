@@ -28,4 +28,5 @@ MODULE constants_mod
   real(r8),parameter :: Inf       = huge(Inf)
   real(r8),parameter :: tolerance = 1.E-15         ! tolerant parameter
   real(r8),parameter :: D2M       = 2._r16/90._r16 ! coef for converting radians to map panel coordinate
+  real(r8),parameter :: M2D       = 45._r16
 END MODULE constants_mod

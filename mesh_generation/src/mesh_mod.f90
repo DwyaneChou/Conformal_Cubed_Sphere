@@ -65,8 +65,9 @@
         real dxdeta,dydeta,dzdeta
         real dxdr  ,dydr  ,dzdr
       
-        real,dimension(2):: xm
-        real,dimension(3):: xc
+        real,dimension(2  ):: xm
+        real,dimension(3  ):: xc
+        real,dimension(3,2):: dxcdxm
         
         integer, parameter :: stencil_width = 2 * xhalo+1
         real fc(stencil_width)
@@ -149,15 +150,19 @@
         elseif(trim(adjustl(gen_method))=='Rancic')then
           call inicuco
           do k = 1,Nf
-            !$OMP PARALLEL DO PRIVATE(xm,xc,i)
+            !$OMP PARALLEL DO PRIVATE(xm,xc,dxcdxm,i)
              do j = 1, ny
                 do i = 1, nx
                   xm(1) = mesh%xi (i,j,k)
                   xm(2) = mesh%eta(i,j,k)
-                  call xmtoxc(xm,xc,k)
+                  !call xmtoxc(xm,xc,k)
+                  call xmtoxc(xm,xc,dxcdxm,k)
                   mesh%x(i,j,k) = xc(1)
                   mesh%y(i,j,k) = xc(2)
                   mesh%z(i,j,k) = xc(3)
+                  
+                  mesh%jab(:,:,i,j,k) = dxcdxm / M2D / D2R
+                  
                   call cart2sph(mesh%lon(i,j,k),mesh%lat(i,j,k),mesh%x(i,j,k),mesh%y(i,j,k),mesh%z(i,j,k))
                 end do! i loop 
              end do! j loop
@@ -175,48 +180,48 @@
         call CubedSphereFillHalo(y_tmp)
         call CubedSphereFillHalo(z_tmp)
         
-        ! Calculate matrices
-        dh = dx * D2R / 2.
-        do k = ifs,ife
-          !$OMP PARALLEL DO PRIVATE(i,lon,lat,dlondx,dlondy,dlondz,dlatdx,dlatdy,dlatdz,sph2cart_matrix,fc)
-          do j = jds, jde
-            do i = ids, ide
-              lon = mesh%lon(i,j,k)
-              lat = mesh%lat(i,j,k)
-              
-              dlondx = -sin(lon); dlatdx = -cos(lon)*sin(lat)
-              dlondy =  cos(lon); dlatdy = -sin(lon)*sin(lat)
-              dlondz = 0.       ; dlatdz =  cos(lat)
-              
-              sph2cart_matrix(1,1) = dlondx
-              sph2cart_matrix(1,2) = dlondy
-              sph2cart_matrix(1,3) = dlondz
-              sph2cart_matrix(2,1) = dlatdx
-              sph2cart_matrix(2,2) = dlatdy
-              sph2cart_matrix(2,3) = dlatdz
-              
-              !dxdxi
-              fc(1:stencil_width) = x_tmp(i-xhalo:i+xhalo,j,k)
-              mesh%jab(1,1,i,j,k) = center_difference(fc,dh)
-              !dydxi
-              fc(1:stencil_width) = y_tmp(i-xhalo:i+xhalo,j,k)
-              mesh%jab(2,1,i,j,k) = center_difference(fc,dh)
-              !dzdxi
-              fc(1:stencil_width) = z_tmp(i-xhalo:i+xhalo,j,k)
-              mesh%jab(3,1,i,j,k) = center_difference(fc,dh)
-              !dxdeta
-              fc(1:stencil_width) = x_tmp(i,j-xhalo:j+xhalo,k)
-              mesh%jab(1,2,i,j,k) = center_difference(fc,dh)
-              !dydeta
-              fc(1:stencil_width) = y_tmp(i,j-xhalo:j+xhalo,k)
-              mesh%jab(2,2,i,j,k) = center_difference(fc,dh)
-              !dzdeta
-              fc(1:stencil_width) = z_tmp(i,j-xhalo:j+xhalo,k)
-              mesh%jab(3,2,i,j,k) = center_difference(fc,dh)
-            enddo
-          enddo
-          !$OMP END PARALLEL DO
-        enddo
+        !! Calculate matrices
+        !dh = dx * D2R / 2.
+        !do k = ifs,ife
+        !  !$OMP PARALLEL DO PRIVATE(i,lon,lat,dlondx,dlondy,dlondz,dlatdx,dlatdy,dlatdz,sph2cart_matrix,fc)
+        !  do j = jds, jde
+        !    do i = ids, ide
+        !      lon = mesh%lon(i,j,k)
+        !      lat = mesh%lat(i,j,k)
+        !      
+        !      dlondx = -sin(lon); dlatdx = -cos(lon)*sin(lat)
+        !      dlondy =  cos(lon); dlatdy = -sin(lon)*sin(lat)
+        !      dlondz = 0.       ; dlatdz =  cos(lat)
+        !      
+        !      sph2cart_matrix(1,1) = dlondx
+        !      sph2cart_matrix(1,2) = dlondy
+        !      sph2cart_matrix(1,3) = dlondz
+        !      sph2cart_matrix(2,1) = dlatdx
+        !      sph2cart_matrix(2,2) = dlatdy
+        !      sph2cart_matrix(2,3) = dlatdz
+        !      
+        !      !dxdxi
+        !      fc(1:stencil_width) = x_tmp(i-xhalo:i+xhalo,j,k)
+        !      mesh%jab(1,1,i,j,k) = center_difference(fc,dh)
+        !      !dydxi
+        !      fc(1:stencil_width) = y_tmp(i-xhalo:i+xhalo,j,k)
+        !      mesh%jab(2,1,i,j,k) = center_difference(fc,dh)
+        !      !dzdxi
+        !      fc(1:stencil_width) = z_tmp(i-xhalo:i+xhalo,j,k)
+        !      mesh%jab(3,1,i,j,k) = center_difference(fc,dh)
+        !      !dxdeta
+        !      fc(1:stencil_width) = x_tmp(i,j-xhalo:j+xhalo,k)
+        !      mesh%jab(1,2,i,j,k) = center_difference(fc,dh)
+        !      !dydeta
+        !      fc(1:stencil_width) = y_tmp(i,j-xhalo:j+xhalo,k)
+        !      mesh%jab(2,2,i,j,k) = center_difference(fc,dh)
+        !      !dzdeta
+        !      fc(1:stencil_width) = z_tmp(i,j-xhalo:j+xhalo,k)
+        !      mesh%jab(3,2,i,j,k) = center_difference(fc,dh)
+        !    enddo
+        !  enddo
+        !  !$OMP END PARALLEL DO
+        !enddo
         
       end subroutine generateConformalCubedSphere
       

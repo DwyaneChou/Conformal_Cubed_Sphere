@@ -1,5 +1,5 @@
 &domain
- dx         = 1,
- dy         = 1,
- gen_method = 'CCAM'
+ dx         = 0.5,
+ dy         = 0.5,
+ gen_method = 'Rancic'
 /

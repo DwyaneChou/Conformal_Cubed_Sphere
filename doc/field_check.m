@@ -58,5 +58,5 @@ figure
 plt=pcolor(lon2d,lat2d,var_plot);
 set(plt,'EdgeColor','none')
 % shading interp
-% set(gca,'CLim',[-16,38])
+% set(gca,'CLim',[-0.000000000002,0.000000000002])
 colormap(jet)
