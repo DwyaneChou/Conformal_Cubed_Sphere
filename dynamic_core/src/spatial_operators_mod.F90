@@ -161,10 +161,12 @@ MODULE spatial_operators_mod
             
             dfluxdx  (i,j,iPatch) = ( flux_x_ext(ip1,jc,iPatch) - flux_x_ext(im1,jc,iPatch) ) / dx
             dEdx     (i,j,iPatch) = ( E_ext     (ip1,jc,iPatch) - E_ext     (im1,jc,iPatch) ) / dx
-            dvdx     (i,j,iPatch) = ( v_ext     (ip1,jc,iPatch) - v_ext     (im1,jc,iPatch) ) / dx
+            !dvdx     (i,j,iPatch) = ( v_ext     (ip1,jc,iPatch) - v_ext     (im1,jc,iPatch) ) / dx
+            dvdx     (i,j,iPatch) = (-stat%v(i-3,j,iPatch) + 9. * stat%v(i-2,j,iPatch) - 45. * stat%v(i-1,j,iPatch) + 45. * stat%v(i+1,j,iPatch) - 9. * stat%v(i+2,j,iPatch) + stat%v(i+3,j,iPatch) ) / ( 60. * dx )
             dfluxdy  (i,j,iPatch) = ( flux_y_ext(ic,jp1,iPatch) - flux_y_ext(ic,jm1,iPatch) ) / dy
             dEdy     (i,j,iPatch) = ( E_ext     (ic,jp1,iPatch) - E_ext     (ic,jm1,iPatch) ) / dy
-            dudy     (i,j,iPatch) = ( u_ext     (ic,jp1,iPatch) - u_ext     (ic,jm1,iPatch) ) / dy
+            !dudy     (i,j,iPatch) = ( u_ext     (ic,jp1,iPatch) - u_ext     (ic,jm1,iPatch) ) / dy
+            dudy     (i,j,iPatch) = (-stat%u(i,j-3,iPatch) + 9. * stat%u(i,j-2,iPatch) - 45. * stat%u(i,j-1,iPatch) + 45. * stat%u(i,j+1,iPatch) - 9. * stat%u(i,j+2,iPatch) + stat%u(i,j+3,iPatch) ) / ( 60. * dy )
             
             vorticity(i,j,iPatch) = dvdx(i,j,iPatch) - dudy(i,j,iPatch) + mesh%sqrtG(i,j,iPatch) * mesh%f(i,j,iPatch)
           enddo

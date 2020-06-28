@@ -6,7 +6,7 @@
 % var_name = 'phit';
 var_name = 'zonal_wind';
 % var_name = 'meridional_wind';
-it       = 9;
+it       = 49;
 
 nc_file = '..\dynamic_core\run\ccsm_output.nc';
 
