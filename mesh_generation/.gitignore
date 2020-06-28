@@ -1,3 +1,4 @@
 *.nc
 build/*
 run/ccs.exe
+*.nc
