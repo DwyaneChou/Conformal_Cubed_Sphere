@@ -2,7 +2,7 @@ clc
 clear
 
 time_start = 1;
-time_end   = 121;
+time_end   = 289;
 
 history_path = '..\dynamic_core\run';
 
@@ -10,7 +10,7 @@ res_nc{1} = [history_path,'\','ccsm_output.nc'];
 
 % res_nc{1} = [history_path,'\','ccsm_output_2p0.nc'];
 % res_nc{1} = [history_path,'\','ccsm_output_1p0.nc'];
-res_nc{2} = [history_path,'\','ccsm_output_0p5.nc'];
+% res_nc{2} = [history_path,'\','ccsm_output_0p5.nc'];
 % res_nc{2} = [history_path,'\','ccsm_output.nc'];
 
 res_num = size(res_nc,2);

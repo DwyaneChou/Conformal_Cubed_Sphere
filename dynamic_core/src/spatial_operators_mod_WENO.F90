@@ -14,136 +14,64 @@ MODULE spatial_operators_mod
       type(stat_field), target, intent(in   ) :: stat
       type(tend_field), target, intent(inout) :: tend
       
-      real, dimension(ics:ice,jcs:jce,ifs:ife) :: E
-      real, dimension(ics:ice,jcs:jce,ifs:ife) :: K
-      
       real, dimension(ics:ice,jcs:jce,ifs:ife) :: flux_x
       real, dimension(ics:ice,jcs:jce,ifs:ife) :: flux_y
       
-      real, dimension(ics:ice,jcs:jce,ifs:ife) :: vorticity
-      
-      real, dimension(ics:ice,jcs:jce,ifs:ife) :: phit
-      real, dimension(ics:ice,jcs:jce,ifs:ife) :: phitG
-      
       real, dimension(ics:ice,jcs:jce,ifs:ife) :: dfluxdx
       real, dimension(ics:ice,jcs:jce,ifs:ife) :: dfluxdy
-      real, dimension(ics:ice,jcs:jce,ifs:ife) :: dEdx
-      real, dimension(ics:ice,jcs:jce,ifs:ife) :: dEdy
-      real, dimension(ics:ice,jcs:jce,ifs:ife) :: dvdx
-      real, dimension(ics:ice,jcs:jce,ifs:ife) :: dudy
       
       real, dimension(ids:ide,jds:jde,ifs:ife) :: flux_x_ext_p
       real, dimension(ids:ide,jds:jde,ifs:ife) :: flux_x_ext_n
       real, dimension(ids:ide,jds:jde,ifs:ife) :: flux_y_ext_p
       real, dimension(ids:ide,jds:jde,ifs:ife) :: flux_y_ext_n
-      real, dimension(ids:ide,jds:jde,ifs:ife) :: E_ext_p
-      real, dimension(ids:ide,jds:jde,ifs:ife) :: E_ext_n
-      real, dimension(ids:ide,jds:jde,ifs:ife) :: phiG_ext_p
-      real, dimension(ids:ide,jds:jde,ifs:ife) :: phiG_ext_n
-      real, dimension(ids:ide,jds:jde,ifs:ife) :: phitG_ext_p
-      real, dimension(ids:ide,jds:jde,ifs:ife) :: phitG_ext_n
-      real, dimension(ids:ide,jds:jde,ifs:ife) :: u_ext_p
-      real, dimension(ids:ide,jds:jde,ifs:ife) :: u_ext_n
-      real, dimension(ids:ide,jds:jde,ifs:ife) :: v_ext_p
-      real, dimension(ids:ide,jds:jde,ifs:ife) :: v_ext_n
       
       real, dimension(ids:ide,jds:jde,ifs:ife) :: flux_x_ext
       real, dimension(ids:ide,jds:jde,ifs:ife) :: flux_y_ext
-      real, dimension(ids:ide,jds:jde,ifs:ife) :: E_ext
-      real, dimension(ids:ide,jds:jde,ifs:ife) :: phiG_ext
-      real, dimension(ids:ide,jds:jde,ifs:ife) :: u_ext
-      real, dimension(ids:ide,jds:jde,ifs:ife) :: v_ext
       
-      real uBdy    ! variables on cell boundary
-      real vBdy    ! variables on cell boundary
-      real phitBdy ! variables on cell boundary
-      
-      real eigenvalue_x(2)
-      real eigenvalue_y(2)
       real maxeigen_x
       real maxeigen_y
       
       integer i,j,iPatch
+      integer ip1,jp1,ip2,jp2,ip3,jp3
+      integer im1,jm1,im2,jm2,im3,jm3
       integer ic,jc
-      integer ip1,jp1
-      integer im1,jm1
-      
-      phit  = stat%phi + mesh%phis
-      phitG = phit * mesh%sqrtG
-      
-      K = 0.5 * ( stat%u * stat%uc + stat%v * stat%vc )
-      E = phit + K
       
       flux_x = stat%phiG * stat%uc
       flux_y = stat%phiG * stat%vc
       
       call weno(flux_x_ext_p, flux_x   , 1, 1)
       call weno(flux_x_ext_n, flux_x   ,-1, 1)
-      call weno(E_ext_p     , E        , 1, 1)
-      call weno(E_ext_n     , E        ,-1, 1)
-      !call weno(phiG_ext_p  , stat%phiG, 1, 1)
-      !call weno(phiG_ext_n  , stat%phiG,-1, 1)
-      call weno(phitG_ext_p , phitG    , 1, 1)
-      call weno(phitG_ext_n , phitG    ,-1, 1)
-      call weno(v_ext_p     , stat%v   , 1, 1)
-      call weno(v_ext_n     , stat%v   ,-1, 1)
       call weno(flux_y_ext_p, flux_y   , 1, 2)
       call weno(flux_y_ext_n, flux_y   ,-1, 2)
-      call weno(E_ext_p     , E        , 1, 2)
-      call weno(E_ext_n     , E        ,-1, 2)
-      !call weno(phiG_ext_p  , stat%phiG, 1, 2)
-      !call weno(phiG_ext_n  , stat%phiG,-1, 2)
-      call weno(phitG_ext_p , phitG    , 1, 2)
-      call weno(phitG_ext_n , phitG    ,-1, 2)
-      call weno(u_ext_p     , stat%u   , 1, 2)
-      call weno(u_ext_n     , stat%u   ,-1, 2)
       
       do iPatch = ifs, ife
-        !$OMP PARALLEL DO PRIVATE(i,ip1,im1,jc,uBdy,phitBdy,eigenvalue_x,maxeigen_x)
+        !$OMP PARALLEL DO PRIVATE(i,ip1,jc,maxeigen_x)
         do j = jts, jte
           do i = its-1, ite
             ip1 = 2 * i + 1
-            im1 = 2 * i - 1
             jc  = 2 * j
             
-            uBdy    = 0.5 * ( stat%uc(i+1,j,iPatch) + stat%uc(i,j,iPatch) )
-            phitBdy = 0.5 * ( phit   (i+1,j,iPatch) + phit   (i,j,iPatch) )
-            eigenvalue_x(1) = uBdy - sqrt( mesh%matrixIG_ext(1,1,ip1,j,iPatch) * phitBdy )
-            eigenvalue_x(2) = uBdy + sqrt( mesh%matrixIG_ext(1,1,ip1,j,iPatch) * phitBdy )
+            maxeigen_x = 0.5 * ( stat%uc(i,j,iPatch) + stat%uc(i+1,j,iPatch) )
             
-            maxeigen_x = maxval(abs(eigenvalue_x))
-            
-            flux_x_ext(ip1,jc,iPatch) = 0.5 * ( flux_x_ext_p(ip1,jc,iPatch) + flux_x_ext_n(ip1,jc,iPatch) - maxeigen_x    * ( phitG_ext_n (ip1,jc,iPatch) - phitG_ext_p (ip1,jc,iPatch) ) )
-            E_ext     (ip1,jc,iPatch) = 0.5 * ( E_ext_p     (ip1,jc,iPatch) + E_ext_n     (ip1,jc,iPatch) - maxeigen_x    * ( u_ext_n     (ip1,jc,iPatch) - u_ext_p     (ip1,jc,iPatch) ) )
-            v_ext     (ip1,jc,iPatch) = 0.5 * ( v_ext_p     (ip1,jc,iPatch) + v_ext_n     (ip1,jc,iPatch) - sign(1.,uBdy) * ( v_ext_n     (ip1,jc,iPatch) - v_ext_p     (ip1,jc,iPatch) ) )
+            flux_x_ext(ip1,jc,iPatch) = 0.5 * ( flux_x_ext_p(ip1,jc,iPatch) + flux_x_ext_n(ip1,jc,iPatch) - sign(1.,maxeigen_x) * ( flux_x_ext_n(ip1,jc,iPatch) - flux_x_ext_p(ip1,jc,iPatch) ) )
           enddo
         enddo
         !$OMP END PARALLEL DO
-      enddo
-      
-      do iPatch = ifs, ife
-        !$OMP PARALLEL DO PRIVATE(i,jp1,jm1,ic,vBdy,phitBdy,eigenvalue_y,maxeigen_y)
+        
+        !$OMP PARALLEL DO PRIVATE(i,ic,jp1,maxeigen_y)
         do j = jts-1, jte
           do i = its, ite
             ic  = 2 * i
             jp1 = 2 * j + 1
-            jm1 = 2 * j - 1
             
-            vBdy    = 0.5 * ( stat%vc(i,j+1,iPatch) + stat%vc(i,j,iPatch) )
-            phitBdy = 0.5 * ( phit   (i,j+1,iPatch) + phit   (i,j,iPatch) )
-            eigenvalue_y(1) = vBdy - sqrt( mesh%matrixIG_ext(2,2,i,jp1,iPatch) * phitBdy )
-            eigenvalue_y(2) = vBdy + sqrt( mesh%matrixIG_ext(2,2,i,jp1,iPatch) * phitBdy )
+            maxeigen_y = 0.5 * ( stat%vc(i,j,iPatch) + stat%vc(i,j+1,iPatch) )
             
-            maxeigen_y = maxval(abs(eigenvalue_y))
-            
-            flux_y_ext(ic,jp1,iPatch) = 0.5 * ( flux_y_ext_p(ic,jp1,iPatch) + flux_y_ext_n(ic,jp1,iPatch) - maxeigen_y    * ( phitG_ext_n (ic,jp1,iPatch) - phitG_ext_p (ic,jp1,iPatch) ) )
-            E_ext     (ic,jp1,iPatch) = 0.5 * ( E_ext_p     (ic,jp1,iPatch) + E_ext_n     (ic,jp1,iPatch) - maxeigen_y    * ( v_ext_n     (ic,jp1,iPatch) - v_ext_p     (ic,jp1,iPatch) ) )
-            u_ext     (ic,jp1,iPatch) = 0.5 * ( u_ext_p     (ic,jp1,iPatch) + u_ext_n     (ic,jp1,iPatch) - sign(1.,vBdy) * ( u_ext_n     (ic,jp1,iPatch) - u_ext_p     (ic,jp1,iPatch) ) )
+            flux_y_ext(ic,jp1,iPatch) = 0.5 * ( flux_y_ext_p(ic,jp1,iPatch) + flux_y_ext_n(ic,jp1,iPatch) - sign(1.,maxeigen_y) * ( flux_y_ext_n(ic,jp1,iPatch) - flux_y_ext_p(ic,jp1,iPatch) ) )
           enddo
         enddo
         !$OMP END PARALLEL DO
       enddo
-        
+      
       do iPatch = ifs, ife
         !$OMP PARALLEL DO PRIVATE(i,ic,jc,ip1,im1,jp1,jm1)
         do j = jts, jte
@@ -156,21 +84,15 @@ MODULE spatial_operators_mod
             jm1 = 2 * j - 1
             
             dfluxdx  (i,j,iPatch) = ( flux_x_ext(ip1,jc,iPatch) - flux_x_ext(im1,jc,iPatch) ) / dx
-            dEdx     (i,j,iPatch) = ( E_ext     (ip1,jc,iPatch) - E_ext     (im1,jc,iPatch) ) / dx
-            dvdx     (i,j,iPatch) = ( v_ext     (ip1,jc,iPatch) - v_ext     (im1,jc,iPatch) ) / dx
             dfluxdy  (i,j,iPatch) = ( flux_y_ext(ic,jp1,iPatch) - flux_y_ext(ic,jm1,iPatch) ) / dy
-            dEdy     (i,j,iPatch) = ( E_ext     (ic,jp1,iPatch) - E_ext     (ic,jm1,iPatch) ) / dy
-            dudy     (i,j,iPatch) = ( u_ext     (ic,jp1,iPatch) - u_ext     (ic,jm1,iPatch) ) / dy
-            
-            vorticity(i,j,iPatch) = dvdx(i,j,iPatch) - dudy(i,j,iPatch) + mesh%sqrtG(i,j,iPatch) * mesh%f(i,j,iPatch)
           enddo
         enddo
         !$OMP END PARALLEL DO
       enddo
       
       tend%phiG = - ( dfluxdx + dfluxdy )
-      tend%u    = - dEdx + vorticity * stat%vc
-      tend%v    = - dEdy - vorticity * stat%uc
+      tend%u    = 0.
+      tend%v    = 0.
       
     end subroutine spatial_operator
     

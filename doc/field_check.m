@@ -6,9 +6,9 @@
 var_name = 'phit';
 % var_name = 'zonal_wind';
 % var_name = 'meridional_wind';
-it       = 49;
+it       = 289;
 
-nc_file = '..\dynamic_core\run\ccsm_output.nc';
+nc_file = '..\dynamic_core\run\WENO\ccsm_output_1p0.nc';
 
 dx         = ncreadatt(nc_file,'/','dx');
 % ids        = ncreadatt(nc_file,'/','ids');
