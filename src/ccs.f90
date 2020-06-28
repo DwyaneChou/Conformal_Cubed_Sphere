@@ -14,7 +14,7 @@
       integer, parameter :: nt   = 20
       integer, parameter :: ntay = 30
       real   , parameter :: r    = 0.95
-      integer, parameter :: n    = 360
+      integer, parameter :: n    = 128
       integer, parameter :: nh   = n/2
       
        real(kind=rx), dimension(1200) :: work
@@ -45,14 +45,12 @@
       do kit = 1, nt
         do i = 0, nh
           cang = cdang1*i - 0.25 * pi * ci
-          !print*,i,dble(cang/ci*180./pi)
           z = r*exp(cang)
           z = 1. - z
-          !call toct ( z, w )
           call tay(z**4,a,ntay,w)
-          w       = w**(1./3.)
-          w       = ( 1. - w ) / ( 1. + w/2. )
-          w       = w**3.
+          w = w**(1./3.)
+          w = ( 1. - w ) / ( 1. + w/2. )
+          w = w**3.
                   
           u       = real(w)
           v       = aimag(w)
@@ -67,7 +65,6 @@
         call cfft ( ra, qa, n, 1.0_rx, work, jumble )
 
         do k = 1,ntay
-          !a(k) = a(k) + 0.5 * ( ra(k) / r**(4*k) - a(k) )
           a(k) = ra(k) / r**(4*k)
         enddo
       enddo
@@ -75,64 +72,5 @@
       do k = 1,ntay
         print*,k,a(k)
       enddo
-      
-    contains
-    
-      !--------------------------------------------------------------------------
-      !   r.j.purser, national meteorological center, washington d.c.  1995
-      !                   subroutine  toct
-      !   transform from complex-z in the standard unit-octagon to complex-w in the
-      !   unit-circle
-      !----------------------------------------------------------------------------
-      subroutine toct ( z, w )
-        complex(kind=rx), intent(in)  :: z
-        complex(kind=rx), intent(out) :: w
-        complex(kind=rx) :: zt
-        logical :: kx, ky, kxy, kx1, kxy1
-        real(kind=rx) :: x, y, t
-        
-        x = real(z)
-        y = aimag(z)
-        kx = x > 0.5_rx
-        ky = y > 0.5_rx
-        kxy = y > x
-        
-        if ( kx ) then
-           x = 1.0 - x
-        endif
-        if ( ky ) then
-           y = 1.0 - y
-        endif
-        if ( y > x ) then
-           t = x
-           x = y
-           y = t
-        endif
-        
-        zt = cmplx(x,y,kind=rx)
-        zt = zt**4
-        call tay(zt,a,ntay,w)
-        w = w**(1./3.)
-        w = ( 1. - w ) / ( 1. + w/2. )
-        w = w**3.
-        
-        x = real(w)
-        y = aimag(w)
-        
-        if ( kx ) then
-           x = -x
-        end if
-        if ( ky ) then
-           y = -y
-        end if
-        if ( kxy ) then
-           t = x
-           x = y
-           y = t
-        endif
-        
-        w = cmplx(x,y,kind=rx)
-        
-      end subroutine toct
     
     end program CCS
