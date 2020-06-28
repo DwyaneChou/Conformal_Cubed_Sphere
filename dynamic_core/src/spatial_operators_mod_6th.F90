@@ -14,31 +14,15 @@ MODULE spatial_operators_mod
       type(stat_field), target, intent(in   ) :: stat
       type(tend_field), target, intent(inout) :: tend
       
-      real, dimension(ics:ice,jcs:jce,ifs:ife) :: E
-      real, dimension(ics:ice,jcs:jce,ifs:ife) :: K
-      
       real, dimension(ics:ice,jcs:jce,ifs:ife) :: flux_x
       real, dimension(ics:ice,jcs:jce,ifs:ife) :: flux_y
       
-      real, dimension(ics:ice,jcs:jce,ifs:ife) :: vorticity
-      
-      real, dimension(ics:ice,jcs:jce,ifs:ife) :: phit
-      
       real, dimension(ics:ice,jcs:jce,ifs:ife) :: dfluxdx
       real, dimension(ics:ice,jcs:jce,ifs:ife) :: dfluxdy
-      real, dimension(ics:ice,jcs:jce,ifs:ife) :: dEdx
-      real, dimension(ics:ice,jcs:jce,ifs:ife) :: dEdy
-      real, dimension(ics:ice,jcs:jce,ifs:ife) :: dvdx
-      real, dimension(ics:ice,jcs:jce,ifs:ife) :: dudy
       
       integer i,j,iPatch
       integer ip1,jp1,ip2,jp2,ip3,jp3
       integer im1,jm1,im2,jm2,im3,jm3
-      
-      phit  = stat%phi + mesh%phis
-      
-      K = 0.5 * ( stat%u * stat%uc + stat%v * stat%vc )
-      E = phit + K
       
       flux_x = stat%phiG * stat%uc
       flux_y = stat%phiG * stat%vc
@@ -60,23 +44,15 @@ MODULE spatial_operators_mod
             jm3 = j - 3
             
             dfluxdx  (i,j,iPatch) = (-flux_x(im3,j,iPatch) + 9. * flux_x(im2,j,iPatch) - 45. * flux_x(im1,j,iPatch) + 45. * flux_x(ip1,j,iPatch) - 9. * flux_x(ip2,j,iPatch) + flux_x(ip3,j,iPatch) ) / ( 60. * dx )
-            dEdx     (i,j,iPatch) = (-E     (im3,j,iPatch) + 9. * E     (im2,j,iPatch) - 45. * E     (im1,j,iPatch) + 45. * E     (ip1,j,iPatch) - 9. * E     (ip2,j,iPatch) + E     (ip3,j,iPatch) ) / ( 60. * dx )
-            dvdx     (i,j,iPatch) = (-stat%v(im3,j,iPatch) + 9. * stat%v(im2,j,iPatch) - 45. * stat%v(im1,j,iPatch) + 45. * stat%v(ip1,j,iPatch) - 9. * stat%v(ip2,j,iPatch) + stat%v(ip3,j,iPatch) ) / ( 60. * dx )
             dfluxdy  (i,j,iPatch) = (-flux_y(i,jm3,iPatch) + 9. * flux_y(i,jm2,iPatch) - 45. * flux_y(i,jm1,iPatch) + 45. * flux_y(i,jp1,iPatch) - 9. * flux_y(i,jp2,iPatch) + flux_y(i,jp3,iPatch) ) / ( 60. * dy )
-            dEdy     (i,j,iPatch) = (-E     (i,jm3,iPatch) + 9. * E     (i,jm2,iPatch) - 45. * E     (i,jm1,iPatch) + 45. * E     (i,jp1,iPatch) - 9. * E     (i,jp2,iPatch) + E     (i,jp3,iPatch) ) / ( 60. * dy )
-            dudy     (i,j,iPatch) = (-stat%u(i,jm3,iPatch) + 9. * stat%u(i,jm2,iPatch) - 45. * stat%u(i,jm1,iPatch) + 45. * stat%u(i,jp1,iPatch) - 9. * stat%u(i,jp2,iPatch) + stat%u(i,jp3,iPatch) ) / ( 60. * dy )
-            
-            vorticity(i,j,iPatch) = dvdx(i,j,iPatch) - dudy(i,j,iPatch) + mesh%sqrtG(i,j,iPatch) * mesh%f(i,j,iPatch)
-            !vorticity(i,j,iPatch) = 0.5*( stat%v(ip1,j,iPatch) - stat%v(im1,j,iPatch) - sign(1.,stat%u(i,j,iPatch))*(stat%v(ip1,j,iPatch)+stat%v(im1,j,iPatch)-2.*stat%v(i,j,iPatch)) )/dx &
-            !                      - 0.5*( stat%u(i,jp1,iPatch) - stat%u(i,jm1,iPatch) - sign(1.,stat%v(i,j,iPatch))*(stat%u(i,jp1,iPatch)+stat%u(i,jm1,iPatch)-2.*stat%u(i,j,iPatch)) )/dy &
-            !                      + mesh%sqrtG(i,j,iPatch) * mesh%f(i,j,iPatch)
+
           enddo
         enddo
       enddo
       
       tend%phiG = - ( dfluxdx + dfluxdy )
-      tend%u    = - dEdx + vorticity * stat%vc
-      tend%v    = - dEdy - vorticity * stat%uc
+      tend%u    = 0.
+      tend%v    = 0.
       
     end subroutine spatial_operator
     
